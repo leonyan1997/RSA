@@ -19,7 +19,6 @@ public:
 	static int basebit;
 private:
 	friend class Rsa;
-	friend void test();
 public:
 	friend BigInt operator + (const BigInt& a, const BigInt& b);
 	friend BigInt operator - (const BigInt& a, const BigInt& b);

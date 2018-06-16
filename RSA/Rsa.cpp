@@ -18,29 +18,30 @@ Rsa::~Rsa()
 {
 }
 
-void Rsa::init(unsigned int n)
+void Rsa::Init(unsigned int n)
 {
 	srand(time(NULL));
 	//产生大素数p、q
-	_p = createPrime(n, 10);
-	_q = createPrime(n, 10);
-	//计算N
-	N = _p * _q;
-	//计算出欧拉数
-	_ol = (_p - 1)*(_q - 1);
-	//加密指数e
-	createExp(_ol);
-	//d
-}
+	prime_number1 = createPrime(n, 10);
+	prime_number2 = createPrime(n, 10);
 
-BigInt Rsa::createOddNum(unsigned int n)
-{//生成长度为n的奇数
-	n = n / 4;
+	modulus_ = prime_number1 * prime_number2;
+
+	euler_function_num_ = (prime_number1 - 1)*(prime_number2 - 1);
+
+	public_key_ = get_public_key();//TODO:公钥居然是固定的？！！
+	//get_public_key(euler_function_num_);
+	private_key_ = get_private_key();
+}
+//生成长度为n的奇数
+BigInt Rsa::createOddNum(unsigned int odd_num_length)
+{
+	odd_num_length /= 4;//因为从2进制转化到16进制，位数要变为原先的1/4
 	static unsigned char hex_table[] = { '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F' };
-	if (n)
+	if (odd_num_length)
 	{
 		ostringstream oss;
-		for (std::size_t i = 0; i<n - 1; ++i)
+		for (std::size_t i = 0; i<odd_num_length - 1; ++i)
 			oss << hex_table[rand() % 16];
 		oss << hex_table[1];
 		string str(oss.str());
@@ -49,9 +50,9 @@ BigInt Rsa::createOddNum(unsigned int n)
 	else
 		return BigInt::Zero;
 }
-
+//判断素数
 bool Rsa::isPrime(const BigInt& n, const unsigned int k)
-{//判断素数
+{
 	assert(n != BigInt::Zero);
 	if (n == BigInt::Two)
 		return true;
@@ -98,41 +99,45 @@ BigInt Rsa::createRandomSmallThan(const BigInt& a)
 		r = a - BigInt::One;
 	return r;
 }
-
-BigInt Rsa::createPrime(unsigned int n, int it_count)
-{//生成长度为n的素数
+//生成长度为n的素数
+BigInt Rsa::createPrime(unsigned int prime_number_length, int it_count)
+{
 	assert(it_count>0);
-	BigInt res = createOddNum(n);
-	while (!isPrime(res, it_count))
+	BigInt odd_num = createOddNum(prime_number_length);
+	while (!isPrime(odd_num, it_count))
 	{
-		res.add(BigInt::Two);
+		odd_num.add(BigInt::Two);
 	}
-	return res;
+	return odd_num;
+}
+//从一个欧拉函数数中生成公钥、私钥
+BigInt Rsa::get_public_key()
+{
+	return BigInt(65537);//TODO:公钥居然是固定的？！！
 }
 
-void Rsa::createExp(const BigInt& ou)
-{//从一个欧拉数中生成公钥、私钥指数
- //e=5;
-	e = 65537;
-	_d = e.extendEuclid(ou);
+BigInt Rsa::get_private_key()
+{
+	return public_key_.extendEuclid(euler_function_num_);
 }
 
-BigInt Rsa::encryptByPu(const BigInt& m)
+BigInt Rsa::Encrypt(const BigInt& m)
 {//公钥加密
-	return m.moden(e, N);
+	return m.moden(public_key_, modulus_);
 }
 
-BigInt Rsa::decodeByPr(const BigInt& c)
+BigInt Rsa::Decode(const BigInt& c)
 {//私钥解密
-	return c.moden(_d, N);
+	return c.moden(private_key_, modulus_);
 }
-
+/*
 BigInt Rsa::encryptByPr(const BigInt& m)
 {//私钥加密
-	return decodeByPr(m);
+	return Decode(m);
 }
 
 BigInt Rsa::decodeByPu(const BigInt& c)
 {//公钥解密
-	return encryptByPu(c);
+	return Encrypt(c);
 }
+*/

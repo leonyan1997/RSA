@@ -44,7 +44,7 @@ bool decode(Rsa& rsa)
 	BigInt c(str);
 
 	long t1 = clock();
-	BigInt m = rsa.decodeByPr(c);
+	BigInt m = rsa.Decode(c);
 	long t2 = clock();
 	cout << "用时:" << (t2 - t1) << "ms." << endl;
 
@@ -65,7 +65,7 @@ bool encry(Rsa& rsa, BigInt& cipher_text)
 		return false;
 
 	BigInt plain_text(input_data);
-	cipher_text = rsa.encryptByPu(plain_text);
+	cipher_text = rsa.Encrypt(plain_text);
 
 	cout << "明文:" << plain_text << endl
 		<< "密文:" << cipher_text << endl;
@@ -78,12 +78,12 @@ void print(Rsa& rsa)
 	cout << rsa << endl;
 }
 
+//初始化RSA的各个数据
 void init(Rsa& rsa, int n)
-{//初始化
-
+{
 	cout << "初始化...." << endl;
 	long t1 = clock();
-	rsa.init(n);
+	rsa.Init(n);
 	long t2 = clock();
 	cout << "初始化完成." << endl;
 	cout << "用时:" << (t2 - t1) / 1000 << "s." << endl;
