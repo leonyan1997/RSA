@@ -1,25 +1,25 @@
 #pragma once
-#include"BigInt.h"
+#include"large_integer.h"
 class Rsa
 {
 public:
-	Rsa();
+	Rsa(unsigned int prime_number_length);
 	~Rsa();
 	void Init(unsigned int n);//初始化，产生公私钥对
 
 public:
-	BigInt Encrypt(const BigInt& m);//公钥加密
-	BigInt Decode(const BigInt& c);//私钥解密
+	LargeInt Encrypt(const LargeInt& m);//公钥加密
+	LargeInt Decode(const LargeInt& c);//私钥解密
 
-	//BigInt encryptByPr(const BigInt& m);//公钥加密
-	//BigInt decodeByPu(const BigInt& m);//私钥解密
+	//LargeInt encryptByPr(const LargeInt& m);//公钥加密
+	//LargeInt decodeByPu(const LargeInt& m);//私钥解密
 private:
-	BigInt createOddNum(unsigned int n);//生成长度为n的奇数
-	bool isPrime(const BigInt& a, const unsigned int k);//判断素数
-	BigInt createPrime(unsigned int n, int it_cout);//生成长度为n的素数
-	BigInt get_public_key();//根据欧拉函数数中生成公钥
-	BigInt get_private_key();//根据欧拉函数数和公钥生成私钥
-	BigInt createRandomSmallThan(const BigInt& a);//创建小数
+	LargeInt createOddNum(unsigned int n);//生成长度为n的奇数
+	bool isPrime(const LargeInt& a, const unsigned int k);//判断素数
+	LargeInt createPrime(unsigned int n, int it_cout);//生成长度为n的素数
+	LargeInt get_public_key();//根据欧拉函数数中生成公钥
+	LargeInt get_private_key();//根据欧拉函数数和公钥生成私钥
+	LargeInt createRandomSmallThan(const LargeInt& a);//创建小数
 	friend ostream& operator <<(ostream& out, const Rsa& rsa)//输出
 	{
 		out << "N:" << rsa.modulus_ << "\n";
@@ -30,10 +30,10 @@ private:
 		return out;
 	}
 public:
-	BigInt public_key_;//公钥
-	BigInt modulus_;//模数
+	LargeInt public_key_;//公钥
+	LargeInt modulus_;//模数
 private:
-	BigInt private_key_;//私钥
-	BigInt prime_number1, prime_number2;//
-	BigInt euler_function_num_;//欧拉数
+	LargeInt private_key_;//私钥
+	LargeInt prime_number1, prime_number2;//
+	LargeInt euler_function_num_;//欧拉数
 };

@@ -21,10 +21,13 @@
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Rsa.h">
+    <ClInclude Include="large_integer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="BigInt.h">
+    <ClInclude Include="rsa.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="rsa_system.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,10 +38,13 @@
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="BigInt.cpp">
+    <ClCompile Include="large_integer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Rsa.cpp">
+    <ClCompile Include="rsa.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="rsa_system.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
