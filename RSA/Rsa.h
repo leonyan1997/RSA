@@ -1,11 +1,17 @@
 #pragma once
 #include"large_integer.h"
+
+typedef vector<LargeInt> PlainTextList;
+typedef vector<LargeInt> CipherTextList;
+typedef LargeInt PlainText;
+typedef LargeInt CipherText;
+
 class Rsa
 {
 public:
 	Rsa(unsigned int prime_number_length);
 	~Rsa();
-	void Init(unsigned int n);//初始化，产生公私钥对
+	//void Init(unsigned int n);//初始化，产生公私钥对
 
 public:
 	LargeInt Encrypt(const LargeInt& m);//公钥加密
@@ -20,15 +26,10 @@ private:
 	LargeInt get_public_key();//根据欧拉函数数中生成公钥
 	LargeInt get_private_key();//根据欧拉函数数和公钥生成私钥
 	LargeInt createRandomSmallThan(const LargeInt& a);//创建小数
-	friend ostream& operator <<(ostream& out, const Rsa& rsa)//输出
-	{
-		out << "N:" << rsa.modulus_ << "\n";
-		out << "p:" << rsa.prime_number1 << "\n";
-		out << "q:" << rsa.prime_number2 << "\n";
-		out << "e:" << rsa.public_key_ << "\n";
-		out << "d:" << rsa.private_key_;
-		return out;
-	}
+	PlainTextList groupPlainText(const PlainText&);
+	CipherText mergeCipherTextList(const CipherTextList&);
+	friend ostream& operator <<(ostream& out, const Rsa& rsa);//输出
+
 public:
 	LargeInt public_key_;//公钥
 	LargeInt modulus_;//模数

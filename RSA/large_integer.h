@@ -4,6 +4,7 @@
 #include<cassert>
 #include<iostream>
 #include <algorithm>
+#include <cstdint>
 using std::ostream;
 using std::vector;
 using std::string;
@@ -11,7 +12,7 @@ using std::string;
 class LargeInt {
 
 public:
-	typedef unsigned long base_t;
+	typedef uint32_t base_t;
 	static int base_char;
 	static int base;
 	static int basebitnum;
@@ -46,60 +47,32 @@ public:
 	typedef vector<base_t> data_t;
 
 	typedef const vector<base_t> const_data_t;
-	LargeInt& trim()
-	{
-		int count = 0;
-		//检查不为0的元素的数量		
-		for (data_t::reverse_iterator it = _data.rbegin(); it != _data.rend(); ++it)
-			if ((*it) == 0)
-				++count;
-			else
-				break;
-		if (count == _data.size())//只有零的情况保留			
-			--count;
-		for (int i = 0; i<count; ++i)
-			_data.pop_back();
-		return *this;
-	}
+	LargeInt& trim();//删除前导零
+
 	friend class bit;
 	class bit
 	{
 	public:
-		std::size_t size();
-		bool at(std::size_t i);
+		uint64_t get_size();
+		bool at(uint64_t i);
 		bit(const LargeInt& a);
 	private:
-		vector<base_t> _bitvec;
-		std::size_t _size;
+		vector<base_t> data_;
+		uint64_t size_;
 	};
 	//大数幂模运算	
 	LargeInt moden(const LargeInt& exp, const LargeInt& p)const;
 	/* 用扩展的欧几里得算法求乘法逆元 */
 	LargeInt extendEuclid(const LargeInt& m);
 public:
-	LargeInt() :_isnegative(false) { _data.push_back(0); }
-
-	LargeInt(const string& num) :_data(), _isnegative(false) { copyFromHexString(num); trim(); }
-
-	LargeInt(const long n) :_isnegative(false) { copyFromLong(n); }
-
-	LargeInt(const_data_t data) :_data(data), _isnegative(false) { trim(); }
-
-	LargeInt& operator =(string s)
-	{
-		_data.clear();
-		_isnegative = false;
-		copyFromHexString(s);
-		trim();
-		return *this;
-	}
-	LargeInt(const LargeInt& a, bool isnegative) :_data(a._data), _isnegative(isnegative) {}
-	LargeInt& operator =(const long n)
-	{
-		_data.clear();
-		copyFromLong(n);
-		return *this;
-	}
+	LargeInt();
+	LargeInt(const string& num);
+	LargeInt(const long n); 
+	LargeInt(const_data_t data);
+	LargeInt(const LargeInt& a, bool isnegative); 
+	LargeInt& operator =(string s);
+	LargeInt& operator =(const long n);
+	
 public:
 	static LargeInt Zero;
 	static LargeInt One;
@@ -112,71 +85,13 @@ private:
 	LargeInt& leftShift(const unsigned int n);
 	LargeInt& rightShift(const unsigned int n);
 	LargeInt& add(const LargeInt& b);
-
 	LargeInt& sub(const LargeInt& b);
-
-	void copyFromHexString(const string& s)
-	{
-		string str(s);
-		if (str.length() && str.at(0) == '-')
-		{
-			if (str.length()>1)
-				_isnegative = true;
-			str = str.substr(1);
-		}
-		int count = (8 - (str.length() % 8)) % 8;
-		std::string temp;
-
-		for (int i = 0; i<count; ++i)
-			temp.push_back(0);
-
-		str = temp + str;
-
-		for (int i = 0; i<str.length(); i += LargeInt::base_char)
-		{
-			base_t sum = 0;
-			for (int j = 0; j<base_char; ++j)
-			{
-				char ch = str[i + j];
-
-				ch = hex2Uchar(ch);
-				sum = ((sum << 4) | (ch));
-			}
-			_data.push_back(sum);
-		}
-		reverse(_data.begin(), _data.end());
-	}
-	char hex2Uchar(char ch)
-	{
-		static char table[] = { 0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f };
-		if (isdigit(ch))
-			ch -= '0';
-		else if (islower(ch))
-			ch -= 'a' - 10;
-		else if (isupper(ch))
-			ch -= 'A' - 10;
-
-		return table[ch];
-	}
-
-	void copyFromLong(const long n)
-	{
-		long a = n;
-		if (a<0)
-		{
-			_isnegative = true;
-			a = -a;
-		}
-		do
-		{
-			LargeInt::base_t ch = (a&(LargeInt::base));
-			_data.push_back(ch);
-			a = a >> (LargeInt::basebitnum);
-		} while (a);
-	}
+	void copyFromHexString(const string& s);
+	char hexCharToBin(char ch);
+	void copyFromLong(const long n);
 	static void div(const LargeInt& a, const LargeInt& b, LargeInt& result, LargeInt& ca);
 private:
-	vector<base_t> _data;
+	vector<base_t> data_;
 	//数据存储	
-	bool _isnegative;
+	bool is_negative_;
 };

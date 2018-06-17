@@ -24,9 +24,9 @@ private:
 
 	bool isLegal(const string & str);
 
-	bool decode(Rsa & rsa);
+	void decode(Rsa & rsa);
 
-	bool encrypt(Rsa & rsa);
+	void encrypt(Rsa & rsa);
 
 	void print(Rsa & rsa);
 };

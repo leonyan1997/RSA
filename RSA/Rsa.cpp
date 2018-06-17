@@ -29,7 +29,7 @@ Rsa::Rsa(unsigned int prime_number_length)
 Rsa::~Rsa()
 {
 }
-
+/*
 void Rsa::Init(unsigned int prime_number_length)
 {
 	srand(time(NULL));
@@ -44,7 +44,7 @@ void Rsa::Init(unsigned int prime_number_length)
 	public_key_ = get_public_key();//TODO:公钥居然是固定的？！！
 	//get_public_key(euler_function_num_);
 	private_key_ = get_private_key();
-}
+}*/
 //生成长度为n的奇数
 LargeInt Rsa::createOddNum(unsigned int odd_num_length)
 {
@@ -53,7 +53,7 @@ LargeInt Rsa::createOddNum(unsigned int odd_num_length)
 	if (odd_num_length)
 	{
 		ostringstream oss;
-		for (std::size_t i = 0; i<odd_num_length - 1; ++i)
+		for (uint64_t i = 0; i<odd_num_length - 1; ++i)
 			oss << hex_table[rand() % 16];
 		oss << hex_table[1];
 		string str(oss.str());
@@ -74,11 +74,11 @@ bool Rsa::isPrime(const LargeInt& n, const unsigned int k)
 	if (b.at(0) == 1)
 		return false;
 
-	for (std::size_t t = 0; t<k; ++t)
+	for (uint64_t t = 0; t<k; ++t)
 	{
 		LargeInt a = createRandomSmallThan(n_1);//随机数
 		LargeInt d(LargeInt::One);
-		for (int i = b.size() - 1; i >= 0; --i)
+		for (int i = b.get_size() - 1; i >= 0; --i)
 		{
 			LargeInt x = d;
 			d = (d*d) % n;
@@ -111,6 +111,16 @@ LargeInt Rsa::createRandomSmallThan(const LargeInt& a)
 		r = a - LargeInt::One;
 	return r;
 }
+
+PlainTextList Rsa::groupPlainText(const PlainText &)
+{
+	return PlainTextList();
+}
+
+CipherText Rsa::mergeCipherTextList(const CipherTextList &)
+{
+	return CipherText();
+}
 //生成长度为n的素数
 LargeInt Rsa::createPrime(unsigned int prime_number_length, int it_count)
 {
@@ -130,26 +140,34 @@ LargeInt Rsa::get_public_key()
 
 LargeInt Rsa::get_private_key()
 {
-	return public_key_.extendEuclid(euler_function_num_);
+	return public_key_.extendEuclid(modulus_);
 }
 //公钥加密//TODO:加密的时候要验证明文分组和模数的大小关系
 LargeInt Rsa::Encrypt(const LargeInt& plain_text)
 {
+	/*
+	PlainTextList plain_text_list = groupPlainText(plain_text);
+	CipherTextList cipher_text_list;
+	for (PlainTextList::iterator i = plain_text_list.begin(); i != plain_text_list.end(); ++i)
+	{
+		cipher_text_list.push_back(i->moden(public_key_, modulus_));
+	}
+	return mergeCipherTextList(cipher_text_list);
+	*/
 	return plain_text.moden(public_key_, modulus_);
 }
-
-LargeInt Rsa::Decode(const LargeInt& c)
-{//私钥解密
-	return c.moden(private_key_, modulus_);
-}
-/*
-LargeInt Rsa::encryptByPr(const LargeInt& m)
-{//私钥加密
-	return decode(m);
+//私钥解密
+LargeInt Rsa::Decode(const LargeInt& cipher_text)
+{
+	return cipher_text.moden(private_key_, modulus_);
 }
 
-LargeInt Rsa::decodeByPu(const LargeInt& c)
-{//公钥解密
-	return encrypt(c);
+ostream & operator<<(ostream & out, const Rsa & rsa)
+{
+	out << "modulus:" << rsa.modulus_ << "\n";
+	out << "prime_number1:" << rsa.prime_number1 << "\n";
+	out << "prime_number2:" << rsa.prime_number2 << "\n";
+	out << "public_key:" << rsa.public_key_ << "\n";
+	out << "private_key:" << rsa.private_key_;
+	return out;
 }
-*/

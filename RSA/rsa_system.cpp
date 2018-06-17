@@ -24,47 +24,46 @@ bool RsaSystem::isLegal(const string& str)
 	return true;
 }
 //解密
-bool RsaSystem::decode(Rsa& rsa)
+void RsaSystem::decode(Rsa& rsa)
 {
 	string input_cipher_text;
+
 	do
 	{
 		cout << ">输入16进制密文:";
-	} while (!(cin >> input_cipher_text));
+		cin >> input_cipher_text;
+	} while (!isLegal(input_cipher_text));
 
-	if (!isLegal(input_cipher_text))
-		return false;
-
-	LargeInt cipher_text(input_cipher_text);
+	CipherText cipher_text(input_cipher_text);
 
 	long t1 = clock();
-	LargeInt plain_text = rsa.Decode(cipher_text);
+	PlainText plain_text = rsa.Decode(cipher_text);
 	long t2 = clock();
-	cout << "用时:" << (t2 - t1) << "ms." << endl;
 
+	cout << "用时:" << (t2 - t1) << "ms." << endl;
 	cout << "密文:" << cipher_text << endl
 		<< "明文:" << plain_text << endl;
-	return true;
 }
 //加密
-bool RsaSystem::encrypt(Rsa& rsa)
+void RsaSystem::encrypt(Rsa& rsa)
 {
 	string input_plain_text;
+
 	do
 	{
 		cout << ">输入16进制明文:";
-	} while (!(cin >> input_plain_text));
+		cin >> input_plain_text;
+	} while (!isLegal(input_plain_text));
 
-	if (!isLegal(input_plain_text))
-		return false;
+	PlainText plain_text(input_plain_text);
 
-	LargeInt plain_text(input_plain_text);
-	LargeInt cipher_text = rsa.Encrypt(plain_text);
+	long t1 = clock();
+	CipherText cipher_text = rsa.Encrypt(plain_text);
+	long t2 = clock();
 
+	cout << "用时:" << (t2 - t1) << "ms." << endl;
 	cout << "明文:" << plain_text << endl
 		<< "密文:" << cipher_text << endl;
-
-	return true;
 }
 
 void RsaSystem::print(Rsa& rsa)
