@@ -61,7 +61,7 @@ public:
 		uint64_t bit_size_;
 	};
 	//大数幂模运算	
-	LargeInt moden(const LargeInt& exp, const LargeInt& p)const;
+	LargeInt ModularPower(const LargeInt& exp, const LargeInt& p)const;
 	/* 用扩展的欧几里得算法求乘法逆元 */
 	LargeInt extendEuclid(const LargeInt& m);
 public:
@@ -91,7 +91,7 @@ private:
 	void copyFromLong(const long n);
 	static void div(const LargeInt& a, const LargeInt& b, LargeInt& result, LargeInt& ca);
 private:
-	vector<base_t> data_;
-	//数据存储	
-	bool is_negative_;
+	vector<base_t> data_;//数据存储	
+	
+	bool is_negative_;//是否为负数
 };

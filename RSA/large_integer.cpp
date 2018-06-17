@@ -409,23 +409,22 @@ LargeInt& LargeInt::add(const LargeInt& b)
 	return *this;
 }
 //蒙哥马利幂模运算
-LargeInt LargeInt::moden(const LargeInt& public_key, const LargeInt& modulus)const
+LargeInt LargeInt::ModularPower(const LargeInt& ex, const LargeInt& modulus)const
 {
-	LargeInt::bit t(public_key);
+	LargeInt::bit t(ex);
 
-	LargeInt cipher_text(1);
+	LargeInt text(1);
 	for (int i = t.get_size() - 1; i >= 0; --i)
 	{
-		cipher_text = (cipher_text*cipher_text) % modulus;
+		text = (text*text) % modulus;
 		if (t.at(i))
-			cipher_text = (cipher_text*(*this)) % modulus;
+			text = (text*(*this)) % modulus;
 	}
-	return cipher_text;
+	return text;
 }
-
+//扩展欧几里得算法求乘法逆元
 LargeInt LargeInt::extendEuclid(const LargeInt& modulus)
-{//扩展欧几里得算法求乘法逆元
-	assert(modulus.is_negative_ == false);//modulus为正数
+{
 	LargeInt a[3], b[3], t[3];
 	a[0] = 1; a[1] = 0; a[2] = modulus;
 	b[0] = 0; b[1] = 1; b[2] = *this;
