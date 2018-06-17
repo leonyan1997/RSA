@@ -3,11 +3,11 @@
 #include"large_integer.h"
 #include<cassert>
 
-int LargeInt::base_char = 8;
+int LargeInt::base_num_length = 8;//1个data里存放8个16进制数。
 int LargeInt::base = 0xFFFFFFFF;
-int LargeInt::basebit = 5;//2^5
-int LargeInt::basebitchar = 0x1F;
-int LargeInt::basebitnum = 32;
+int LargeInt::base_bit_length = 5;//1个data所占的bit位数。本来应该是32。因为用左移操作该数，所以是5。
+int LargeInt::basebitchar = 0x1F;//31
+int LargeInt::base_bit_num = 32;//1个data所占的bit位数。
 LargeInt LargeInt::Zero(0);
 LargeInt LargeInt::One(1);
 LargeInt LargeInt::Two(2);
@@ -41,7 +41,7 @@ LargeInt operator * (const LargeInt& a, const LargeInt& b)
 		{
 			LargeInt temp(big, false);
 			temp.leftShift(i);
-			//std::cout<<"tmp:"<<temp<<std::endl;
+			//std::cout<<"tmp:"<<zeros<<std::endl;
 			result.add(temp);
 			//std::cout<<"res:"<<result<<std::endl;
 		}
@@ -82,7 +82,7 @@ LargeInt operator % (const LargeInt& a, const LargeInt& b)
 
 void LargeInt::div(const LargeInt& a, const LargeInt& b, LargeInt& result, LargeInt& ca)
 {
-	//1.复制a,b
+	//1.复制biggest_data,b
 	LargeInt cb(b, false);
 	ca.is_negative_ = false;
 	ca.data_ = a.data_;
@@ -104,7 +104,7 @@ void LargeInt::div(const LargeInt& a, const LargeInt& b, LargeInt& result, Large
 		}
 		if (len<0)
 			break;
-		LargeInt::base_t n = 0;
+		base_t n = 0;
 		while (temp.smallOrEquals(ca))
 		{
 			ca.sub(temp);
@@ -164,12 +164,12 @@ ostream& operator << (ostream& out, const LargeInt& a)
 	static char hex[] = { '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F' };
 	if (a.is_negative_)
 		out << "-";
-	LargeInt::base_t T = 0x0F;
+	base_t T = 0x0F;
 	string str;
-	for (LargeInt::data_t::const_iterator it = a.data_.begin(); it != a.data_.end(); ++it)
+	for (vector<base_t>::const_iterator it = a.data_.begin(); it != a.data_.end(); ++it)
 	{
-		LargeInt::base_t ch = (*it);
-		for (int j = 0; j<LargeInt::base_char; ++j)
+		base_t ch = (*it);
+		for (int j = 0; j<LargeInt::base_num_length; ++j)
 		{
 			str.push_back(hex[ch&(T)]);
 			ch = ch >> 4;
@@ -188,7 +188,7 @@ LargeInt operator <<(const LargeInt& a, unsigned int n)
 
 LargeInt& LargeInt::leftShift(const unsigned int n)
 {
-	int k = n >> (LargeInt::basebit);//5
+	int k = n >> (LargeInt::base_bit_length);//5
 	int off = n & (LargeInt::basebitchar);//0xFF
 
 	int inc = (off == 0) ? k : 1 + k;
@@ -206,15 +206,15 @@ LargeInt& LargeInt::leftShift(const unsigned int n)
 
 	if (off)
 	{
-		LargeInt::base_t T = LargeInt::base;//0xffffffff
-		T = T << (LargeInt::basebitnum - off);//32
+		base_t T = LargeInt::base;//0xffffffff
+		T = T << (LargeInt::base_bit_num - off);//32
 											//左移
-		LargeInt::base_t ch = 0;
+		base_t ch = 0;
 		for (uint64_t i = 0; i<data_.size(); ++i)
 		{
-			LargeInt::base_t t = data_[i];
+			base_t t = data_[i];
 			data_[i] = (t << off) | ch;
-			ch = (t&T) >> (LargeInt::basebitnum - off);//32,最高位
+			ch = (t&T) >> (LargeInt::base_bit_num - off);//32,最高位
 		}
 	}
 	trim();
@@ -223,7 +223,7 @@ LargeInt& LargeInt::leftShift(const unsigned int n)
 
 LargeInt& LargeInt::rightShift(const unsigned int n)
 {
-	int k = n >> (LargeInt::basebit);//5
+	int k = n >> (LargeInt::base_bit_length);//5
 	int off = n & (LargeInt::basebitchar);//0xFF
 
 	if (k)
@@ -238,15 +238,15 @@ LargeInt& LargeInt::rightShift(const unsigned int n)
 
 	if (off)
 	{
-		LargeInt::base_t T = LargeInt::base;//0xFFFFFFFF
-		T = T >> (LargeInt::basebitnum - off);//32
+		base_t T = LargeInt::base;//0xFFFFFFFF
+		T = T >> (LargeInt::base_bit_num - off);//32
 											//左移
-		LargeInt::base_t ch = 0;
+		base_t ch = 0;
 		for (int i = data_.size() - 1; i >= 0; --i)
 		{
-			LargeInt::base_t t = data_[i];
+			base_t t = data_[i];
 			data_[i] = (t >> off) | ch;
-			ch = (t&T) << (LargeInt::basebitnum - off);//32,最高位
+			ch = (t&T) << (LargeInt::base_bit_num - off);//32,最高位
 		}
 	}
 	trim();
@@ -258,21 +258,21 @@ LargeInt& LargeInt::sub(const LargeInt& b)
 	if (b.is_negative_ == is_negative_)
 	{//同号
 
-		LargeInt::data_t &res = data_;
+		data_t &res = data_;
 		if (!(smallThan(b)))//绝对值大于b
 		{
 			int cn = 0;//借位
 					   //大数减小数
 			for (uint64_t i = 0; i<b.data_.size(); ++i)
 			{
-				LargeInt::base_t temp = res[i];
+				base_t temp = res[i];
 				res[i] = (res[i] - b.data_[i] - cn);
 				cn = temp<res[i] ? 1 : temp<b.data_[i] ? 1 : 0;
 			}
 
 			for (uint64_t i = b.data_.size(); i<data_.size() && cn != 0; ++i)
 			{
-				LargeInt::base_t temp = res[i];
+				base_t temp = res[i];
 				res[i] = res[i] - cn;
 				cn = temp<cn;
 			}
@@ -296,42 +296,41 @@ LargeInt& LargeInt::sub(const LargeInt& b)
 //将数据拆分成32位为1组逆向存放，并含有真实数据的前导零
 void LargeInt::copyFromHexString(const string & s)
 {
-	string str(s);
-	//如果str是负的，则符号位置零，并删去符号
-	if (str.length() && str.at(0) == '-')
+	string input_str(s);
+	//如果input_str是负的，则符号位置零，并删去符号
+	if (input_str.length() && input_str.at(0) == '-')
 	{
-		if (str.length()>1)
+		if (input_str.length()>1)
 			is_negative_ = true;
-		str = str.substr(1);
+		input_str = input_str.substr(1);
 	}
 
-	//将str的位数用前导0补齐至8的倍数
-	int count = (8 - (str.length() % 8)) % 8;
-	std::string temp;
+	//将input_str的位数用前导0补齐至LargeInt::base_num_length，即8的倍数
+	int count = LargeInt::base_num_length - (input_str.length() % LargeInt::base_num_length);
+	string zeros;
 	for (int i = 0; i<count; ++i)
-		temp.push_back(0);
-	str = temp + str;
+		zeros.push_back(0);
+	input_str = zeros + input_str;
 
 	//每8字节的处理
-	for (int i = 0; i<str.length(); i += LargeInt::base_char)
+	for (int i = 0; i<input_str.length(); i += LargeInt::base_num_length)
 	{
 		base_t sum = 0;
-		//对每字节开始处理
-		for (int j = 0; j<base_char; ++j)
+		//对每8字节开始处理
+		for (int j = 0; j<LargeInt::base_num_length; ++j)
 		{
 			//i+j代表实际位数
-			char ch = str[i + j];
-
-			//1位16进制字符变成4位2进制数
-			ch = hexCharToBin(ch);
-			sum = ((sum << 4) | (ch));
+			//每个字节存储的1个16进制字符变成对应的4位2进制数
+			//所以这个字节中存放的16进制字符就被转化为2进制，依次存放进data_中。一共存8个字符。
+			sum = ((sum << 4) | hexCharToBin(input_str[i + j]));
 		}
 		data_.push_back(sum);
 	}
+	//逆序存放
 	reverse(data_.begin(), data_.end());
 }
 
-//将1位16进制字符变成4位2进制数
+//将1个6进制字符变成4位2进制数
 char LargeInt::hexCharToBin(char ch)
 {
 	static char table[] = { 0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f };
@@ -356,9 +355,9 @@ void LargeInt::copyFromLong(const long n)
 	do
 	{
 		//截取最后的32位
-		LargeInt::base_t ch = (a&(LargeInt::base));
+		base_t ch = (a&(LargeInt::base));
 		data_.push_back(ch);
-		a = a >> (LargeInt::basebitnum);
+		a = a >> (LargeInt::base_bit_num);
 	} while (a);
 }
 
@@ -367,7 +366,7 @@ LargeInt& LargeInt::add(const LargeInt& b)
 	if (is_negative_ == b.is_negative_)
 	{//同号
 	 //引用
-		LargeInt::data_t &res = data_;
+		vector<base_t> &res = data_;
 		int len = b.data_.size() - data_.size();
 
 		while (len--)//高位补0
@@ -376,14 +375,14 @@ LargeInt& LargeInt::add(const LargeInt& b)
 		int cn = 0;//进位
 		for (uint64_t i = 0; i<b.data_.size(); ++i)
 		{
-			LargeInt::base_t temp = res[i];
+			base_t temp = res[i];
 			res[i] = res[i] + b.data_[i] + cn;
 			cn = temp>res[i] ? 1 : temp>(temp + b.data_[i]) ? 1 : 0;//0xFFFFFFFF
 		}
 
 		for (uint64_t i = b.data_.size(); i<data_.size() && cn != 0; ++i)
 		{
-			LargeInt::base_t temp = res[i];
+			base_t temp = res[i];
 			res[i] = (res[i] + cn);
 			cn = temp>res[i];
 		}
@@ -473,7 +472,6 @@ LargeInt::LargeInt(const_data_t data) : data_(data), is_negative_(false)
 	trim();
 }
 
-
 LargeInt & LargeInt::operator=(string s)
 {
 	data_.clear();
@@ -494,32 +492,37 @@ LargeInt & LargeInt::operator=(const long n)
 
 uint64_t LargeInt::bit::get_size()
 {
-	return size_;
+	return bit_size_;
 }
 
+//i代表bit的位置
 bool LargeInt::bit::at(uint64_t i)
 {
-	uint64_t index = i >> (LargeInt::basebit);
-	uint64_t off = i & (LargeInt::basebitchar);
-	LargeInt::base_t t = data_[index];
-	return (t&(1 << off));
+	uint64_t index = i >> (LargeInt::base_bit_length);//计算出data的位置
+	uint64_t off = i & (LargeInt::basebitchar);//截取低5位bit,计算在该bit在该data中的偏移量
+	base_t t = data_[index];
+	return (t&(1 << off));//返回准确的bit位置
 }
 
-LargeInt::bit::bit(const LargeInt& ba)
+LargeInt::bit::bit(const LargeInt& large_int)
 {
-	data_ = ba.data_;
-	LargeInt::base_t a = data_[data_.size() - 1];//最高位
-	size_ = data_.size() << (LargeInt::basebit);
-	LargeInt::base_t t = 1 << (LargeInt::basebitnum - 1);
+	//给data_赋值
+	data_ = large_int.data_;
 
-	if (a == 0)
-		size_ -= (LargeInt::basebitnum);
+	//给bit_size_赋值
+	base_t biggest_data = data_[data_.size() - 1];//最高位，最大的8个16进制数
+	bit_size_ = data_.size() << (LargeInt::base_bit_length);//*2^5。所有的bit位数
+	base_t this_bit_is_1 = 1 << (LargeInt::base_bit_num - 1);//初始化1个data单位的bit段的最高bit位是1，其余皆是0。
+
+	if (biggest_data == 0)
+		bit_size_ -= (LargeInt::base_bit_num);//bit_size_减少1个data的bit位数
 	else
 	{
-		while (!(a&t))
+		//减少最前面实际意义上表示前导零的bit的位数。
+		while (!(biggest_data & this_bit_is_1))
 		{
-			--size_;
-			t = t >> 1;
+			--bit_size_;
+			this_bit_is_1 = this_bit_is_1 >> 1;
 		}
 	}
 }
@@ -528,7 +531,7 @@ bool LargeInt::smallThan(const LargeInt& b)const
 {
 	if (data_.size() == b.data_.size())
 	{
-		for (LargeInt::data_t::const_reverse_iterator it = data_.rbegin(), it_b = b.data_.rbegin();it != data_.rend(); ++it, ++it_b)
+		for (vector<base_t>::const_reverse_iterator it = data_.rbegin(), it_b = b.data_.rbegin();it != data_.rend(); ++it, ++it_b)
 			if ((*it) != (*it_b))
 				return (*it)<(*it_b);
 		return false;//相等
@@ -541,7 +544,7 @@ bool LargeInt::smallOrEquals(const LargeInt& b)const
 {
 	if (data_.size() == b.data_.size())
 	{
-		for (LargeInt::data_t::const_reverse_iterator it = data_.rbegin(), it_b = b.data_.rbegin();
+		for (vector<base_t>::const_reverse_iterator it = data_.rbegin(), it_b = b.data_.rbegin();
 			it != data_.rend(); ++it, ++it_b)
 			if ((*it) != (*it_b))
 				return (*it)<(*it_b);

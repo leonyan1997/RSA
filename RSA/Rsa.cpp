@@ -45,7 +45,7 @@ void Rsa::Init(unsigned int prime_number_length)
 	//get_public_key(euler_function_num_);
 	private_key_ = get_private_key();
 }*/
-//生成长度为n的奇数
+//生成长度为test_num的奇数
 LargeInt Rsa::createOddNum(unsigned int odd_num_length)
 {
 	odd_num_length /= 4;//因为从2进制转化到16进制，位数要变为原先的1/4
@@ -62,36 +62,34 @@ LargeInt Rsa::createOddNum(unsigned int odd_num_length)
 	else
 		return LargeInt::Zero;
 }
-//判断素数
-bool Rsa::isPrime(const LargeInt& n, const unsigned int k)
+//判断素数，费马检验
+bool Rsa::isPrime(const LargeInt& test_num, const unsigned int times_couter)
 {
-	assert(n != LargeInt::Zero);
-	if (n == LargeInt::Two)
+	if (test_num == LargeInt::Two)
 		return true;
 
-	LargeInt n_1 = n - 1;
-	LargeInt::bit b(n_1);//二进制位
-	if (b.at(0) == 1)
+	LargeInt num_1 = test_num - 1;
+	LargeInt::bit bit_num_1(num_1);//二进制的num_1
+	if (bit_num_1.at(0) == 1)//最低bit位是1，说明是奇数，在未减1前则是偶数，且不是2。所以返回false。
 		return false;
 
-	for (uint64_t t = 0; t<k; ++t)
+	for (uint64_t t = 0; t<times_couter; ++t)
 	{
-		LargeInt a = createRandomSmallThan(n_1);//随机数
-		LargeInt d(LargeInt::One);
-		for (int i = b.get_size() - 1; i >= 0; --i)
+		LargeInt random_num = createRandomSmallThan(num_1);//随机数
+		LargeInt result(LargeInt::One);
+		for (int i = bit_num_1.get_size() - 1; i >= 0; --i)
 		{
-			LargeInt x = d;
-			d = (d*d) % n;
-			if (d == LargeInt::One && x != LargeInt::One && x != n_1)
+			LargeInt x = result;
+			result = (result*result) % test_num;
+			if (result == LargeInt::One && x != LargeInt::One && x != num_1)
 				return false;
 
-			if (b.at(i))
-			{
-				assert(d != LargeInt::Zero);
-				d = (a*d) % n;
+			if (bit_num_1.at(i))
+			{ 
+				result = (random_num * result) % test_num;
 			}
 		}
-		if (d != LargeInt::One)
+		if (result != LargeInt::One)
 			return false;
 	}
 	return true;
@@ -121,7 +119,7 @@ CipherText Rsa::mergeCipherTextList(const CipherTextList &)
 {
 	return CipherText();
 }
-//生成长度为n的素数
+//生成长度为test_num的素数
 LargeInt Rsa::createPrime(unsigned int prime_number_length, int it_count)
 {
 	assert(it_count>0);

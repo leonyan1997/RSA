@@ -9,15 +9,18 @@ using std::ostream;
 using std::vector;
 using std::string;
 
+typedef uint32_t base_t;
+typedef vector<base_t> data_t;
+typedef const vector<base_t> const_data_t;
+
 class LargeInt {
 
 public:
-	typedef uint32_t base_t;
-	static int base_char;
+	static int base_num_length;
 	static int base;
-	static int basebitnum;
+	static int base_bit_num;
 	static int basebitchar;
-	static int basebit;
+	static int base_bit_length;
 private:
 	friend class Rsa;
 public:
@@ -36,7 +39,7 @@ public:
 	friend LargeInt operator * (const LargeInt& a, const long b) { LargeInt t(b); return a * t; }
 	friend LargeInt operator / (const LargeInt& a, const long b) { LargeInt t(b); return a / t; }
 	friend LargeInt operator % (const LargeInt& a, const long b) { LargeInt t(b); return a % t; }
-	friend bool operator < (const LargeInt& a, const long b) { LargeInt t(b); return a<t; }
+	friend bool operator < (const LargeInt& a, const long b) { LargeInt t(b); return a < t; }
 	friend bool operator <= (const LargeInt& a, const  long b) { LargeInt t(b); return a <= t; }
 	friend bool operator == (const LargeInt& a, const long b) { LargeInt t(b); return a == t; }
 	friend bool operator != (const LargeInt& a, const long b) { LargeInt t(b); return !(a == t); };
@@ -44,9 +47,6 @@ public:
 	friend ostream& operator << (ostream& out, const LargeInt& a);
 	friend LargeInt operator <<(const LargeInt& a, unsigned int n);
 public:
-	typedef vector<base_t> data_t;
-
-	typedef const vector<base_t> const_data_t;
 	LargeInt& trim();//删除前导零
 
 	friend class bit;
@@ -58,7 +58,7 @@ public:
 		bit(const LargeInt& a);
 	private:
 		vector<base_t> data_;
-		uint64_t size_;
+		uint64_t bit_size_;
 	};
 	//大数幂模运算	
 	LargeInt moden(const LargeInt& exp, const LargeInt& p)const;
@@ -67,12 +67,12 @@ public:
 public:
 	LargeInt();
 	LargeInt(const string& num);
-	LargeInt(const long n); 
+	LargeInt(const long n);
 	LargeInt(const_data_t data);
-	LargeInt(const LargeInt& a, bool isnegative); 
+	LargeInt(const LargeInt& a, bool isnegative);
 	LargeInt& operator =(string s);
 	LargeInt& operator =(const long n);
-	
+
 public:
 	static LargeInt Zero;
 	static LargeInt One;
